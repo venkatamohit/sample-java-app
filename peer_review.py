@@ -2,6 +2,20 @@ import os
 import requests
 import openai
 import base64
+from dotenv import load_dotenv
+from github import Github, GithubIntegration
+
+def get_github_api_client():
+    load_dotenv()
+    github_app_id = os.getenv('GITHUB_APP_ID')
+    github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
+    private_key_path = os.getenv('PRIVATE_KEY_PATH')
+
+    integration = GithubIntegration(github_app_id, private_key_path)
+    installation = integration.get_installation(github_installation_id)
+    access_token = installation.create_access_token()
+
+    return Github(access_token)
 
 def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -38,12 +52,8 @@ def review_code(code, repo, pull_number, file_path):
     else:
         return False  # Issues found
 
-
 def post_issue_comments(repo, pull_number, file_path, review_result):
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
+    github_client = get_github_api_client()
 
     # Fetch the latest commit ID associated with the file
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
@@ -63,14 +73,16 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         }
         if line_number:
             data["position"] = line_number
-        url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
-        response = requests.post(url, headers=headers, json=data)
 
-        if response.status_code == 201:
+        # Post comment using PyGithub
+        try:
+            repo_obj = github_client.get_repo(repo)
+            pull_request = repo_obj.get_pull(int(pull_number))
+            pull_request.create_review_comment(body=data['body'], commit_id=data['commit_id'],
+                                               path=data['path'], position=data.get('position', None))
             print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
-        else:
-            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}. Status code: {response.status_code}")
-            print(f"Response body: {response.text}")
+        except Exception as e:
+            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}: {str(e)}")
 
 def parse_review_result(review_result, file_path):
     issues = []
@@ -102,51 +114,41 @@ def parse_review_result(review_result, file_path):
     return issues
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
+    github_client = get_github_api_client()
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        commits = response.json()
+    try:
+        repo_obj = github_client.get_repo(repo)
+        pull_request = repo_obj.get_pull(int(pull_number))
+        commits = pull_request.get_commits()
         if commits:
-            return commits[-1]['sha']  # Use the latest commit's SHA
+            return commits[-1].sha  # Use the latest commit's SHA
         else:
             raise Exception("No commits found in the pull request.")
-    else:
-        raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
+    except Exception as e:
+        raise Exception(f"Failed to fetch commit details for PR #{pull_number}: {str(e)}")
 
 def fetch_files_in_pull_request(repo, pull_number):
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
+    github_client = get_github_api_client()
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        files = response.json()
-        file_paths = [file['filename'] for file in files]
+    try:
+        repo_obj = github_client.get_repo(repo)
+        pull_request = repo_obj.get_pull(int(pull_number))
+        files = pull_request.get_files()
+        file_paths = [file.filename for file in files]
         return file_paths
-    else:
-        raise Exception(f"Failed to fetch files in pull request #{pull_number}. Status code: {response.status_code}")
+    except Exception as e:
+        raise Exception(f"Failed to fetch files in pull request #{pull_number}: {str(e)}")
 
 def fetch_file_content(repo, commit_id, file_path):
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    url = f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={commit_id}"
+    github_client = get_github_api_client()
 
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        content = response.json().get('content', '')
-        content_bytes = base64.b64decode(content)
-        return content_bytes.decode('utf-8')
-    else:
-        raise Exception(f"Failed to fetch content for file {file_path}. Status code: {response.status_code}")
+    try:
+        repo_obj = github_client.get_repo(repo)
+        file_content = repo_obj.get_contents(file_path, ref=commit_id)
+        content = base64.b64decode(file_content.content).decode('utf-8')
+        return content
+    except Exception as e:
+        raise Exception(f"Failed to fetch content for file {file_path}: {str(e)}")
 
 def main():
     repo = "venkatamohit/sample-java-app"
