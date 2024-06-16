@@ -59,7 +59,6 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
             print(f"Response body: {response.text}")
 
 def parse_review_result(review_result):
-    # Example parser for the review result
     issues = []
 
     # Split the review_result into individual reviews
@@ -81,18 +80,9 @@ def parse_review_result(review_result):
             continue
 
         # Extract individual issues and suggestions using "-" or ":"
-        issues_list = []
-        current_issue = ""
-        for char in issues_content:
-            if char == '-' or char == ':':
-                issues_list.append(current_issue.strip())
-                current_issue = ""
-            else:
-                current_issue += char
-        issues_list.append(current_issue.strip())  # Append the last issue
+        issues_list = issues_content.split('\n\n')
 
-        # Skip the first element as it contains the file path
-        for issue in issues_list[1:]:
+        for issue in issues_list:
             if issue.strip():  # Check if the issue is not empty
                 # Split the issue to get start line number and comment
                 line_number = None
