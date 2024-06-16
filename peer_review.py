@@ -62,44 +62,28 @@ def parse_review_result(review_result, file_path):
     issues = []
 
     # Split the review_result into individual reviews
-    review_sections = review_result.split('\n\nReview result for ')
+    review_sections = review_result.split('\n\n')
 
     for section in review_sections:
         if not section.strip():  # Skip empty sections
             continue
 
-        # Extract the file path from the section header
-        header_end_idx = section.find(':')
-        if header_end_idx == -1:
-            continue
-        
-        section_header = section[:header_end_idx].strip()
-        issues_content = section[header_end_idx + 1:].strip()
+        # Extract line number if available
+        line_number = None
+        issue_content = section.strip()
 
-        if issues_content.startswith('Overall'):
-            continue
+        # Extract line number if available
+        line_number_idx = issue_content.find('. ')
+        if line_number_idx != -1:
+            line_number_str = issue_content[:line_number_idx].strip()
+            if line_number_str.isdigit():
+                line_number = int(line_number_str)
 
-        # Extract individual issues and suggestions
-        issues_list = issues_content.split('\n\n')
-
-        for issue in issues_list:
-            if issue.strip():  # Check if the issue is not empty
-                # Split the issue to get start line number and comment
-                line_number = None
-                issue_content = issue.strip()
-
-                # Extract line number if available
-                line_number_idx = issue_content.find('. ')
-                if line_number_idx != -1:
-                    line_number_str = issue_content[:line_number_idx].strip()
-                    if line_number_str.isdigit():
-                        line_number = int(line_number_str)
-
-                issues.append({
-                    "file_path": file_path,
-                    "line_number": line_number,
-                    "comment": issue_content
-                })
+        issues.append({
+            "file_path": file_path,
+            "line_number": line_number,
+            "comment": issue_content
+        })
 
     return issues
 
