@@ -67,7 +67,6 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
             for path in file_paths:
                 data = {
                     "body": comment_body,
-                    "commit_id": commit_id,
                     "path": path,
                     "position": idx
                 }
@@ -79,22 +78,40 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
                     print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
                     print(f"Response body: {response.text}")
         
+# Function to fetch commit ID and file paths affected by the pull request
 def fetch_commit_details(repo, pull_number):
     headers = {
         "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
-    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
+    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        commits = response.json()
+        commit_id = commits[0]['sha'] if commits else "COMMIT_ID_HERE"
+        
+        # Fetch file paths from the specific commit
+        file_paths = fetch_files_in_commit(repo, commit_id)
+        
+        return commit_id, file_paths
+    else:
+        raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
+        
+def fetch_files_in_commit(repo, commit_id):
+    headers = {
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    url = f"https://api.github.com/repos/{repo}/commits/{commit_id}/files"
 
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         files = response.json()
         file_paths = [file['filename'] for file in files]
-        commit_id = files[0]['sha'] if files else "COMMIT_ID_HERE"
-        return commit_id, file_paths
+        return file_paths
     else:
-        raise Exception(f"Failed to fetch commit details for PR #{pull_number}.. Status code: {response.status_code}")
-
+        raise Exception(f"Failed to fetch files in commit {commit_id}. Status code: {response.status_code}")
 # Example usage
 def main():
     repo = "venkatamohit/sample-java-app"
