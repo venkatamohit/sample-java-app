@@ -6,11 +6,23 @@ import base64
 def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
+    # Split the code into lines
+    lines = code.splitlines()
+    non_commented_lines = []
+
+    # Filter out commented lines
+    for line_number, line in enumerate(lines, start=1):
+        if not line.strip().startswith('//') and not line.strip().startswith('/*'):
+            non_commented_lines.append(line)
+
+    # Join non-commented lines back into code
+    code_to_review = '\n'.join(non_commented_lines)
+
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a code review assistant."},
-            {"role": "user", "content": f"Review the following code for any issues and do not provide review for code in comments or commented out:\n\n{code}"}
+            {"role": "user", "content": f"Review the following code for any issues and also provide recommendations:\n\n{code_to_review}"}
         ]
     )
 
@@ -25,6 +37,7 @@ def review_code(code, repo, pull_number, file_path):
         return True  # No issues found
     else:
         return False  # Issues found
+
 
 def post_issue_comments(repo, pull_number, file_path, review_result):
     headers = {
