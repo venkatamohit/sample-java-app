@@ -35,23 +35,38 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
     # Fetch the latest commit ID associated with the file
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
 
-    # Example: Iterate through lines and post comments on each issue found
+    # Parse the review result and extract issues
+    issues = parse_review_result(review_result)
+    for issue in issues:
+        line_number = issue['line_number']
+        comment = issue['comment']
+
+        data = {
+            "body": comment,
+            "path": file_path,
+            "position": line_number,
+            "commit_id": commit_id
+        }
+        url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 201:
+            print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
+        else:
+            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}. Status code: {response.status_code}")
+            print(f"Response body: {response.text}")
+
+def parse_review_result(review_result):
+    # Example parser for the review result
+    issues = []
     lines = review_result.split('\n')
     for idx, line in enumerate(lines, start=1):
-        if "Issue:" in line:  # Example condition to detect issues
-            data = {
-                "body": f"### Automated Code Review (Line {idx})\n\n{line}",
-                "path": file_path,
-                "position": idx,
-                "commit_id": commit_id
+        if "Error" in line or "Issue" in line:
+            issue = {
+                "line_number": idx,
+                "comment": line
             }
-            url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
-            response = requests.post(url, headers=headers, json=data)
-            if response.status_code == 201:
-                print(f"Successfully posted comment on Line {idx} of PR #{pull_number}")
-            else:
-                print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
-                print(f"Response body: {response.text}")
+            issues.append(issue)
+    return issues
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
     headers = {
