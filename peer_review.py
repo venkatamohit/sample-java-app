@@ -60,7 +60,7 @@ def parse_review_result(review_result):
     issues = []
     lines = review_result.split('\n')
     for idx, line in enumerate(lines, start=1):
-        if "Error" in line or "Issue" in line:
+        if line.strip():  # Check if the line is not empty
             issue = {
                 "line_number": idx,
                 "comment": line
@@ -137,7 +137,7 @@ def main():
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
 
     # File extensions to skip during review
-    skip_extensions = ['.md', '.txt', '.json', '.py']
+    skip_extensions = ['.md', '.txt', '.json', '.py','.yml']
 
     # Fetch all commit IDs in the pull request
     commit_ids = fetch_commit_ids(repo, pull_number)
@@ -152,7 +152,6 @@ def main():
         for file_path in file_paths:
             # Skip files with certain extensions
             if any(file_path.endswith(ext) for ext in skip_extensions):
-                print(f"Skipping review for {file_path} due to its extension.")
                 continue
 
             # Ensure each file is reviewed only once
