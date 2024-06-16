@@ -15,7 +15,7 @@ def review_code(code, repo, pull_number, file_path):
     )
 
     review_result = response['choices'][0]['message']['content'].strip()
-
+    print(review_result)
     # Post the review result as comments on the pull request
     post_issue_comments(repo, pull_number, file_path, review_result)
 
