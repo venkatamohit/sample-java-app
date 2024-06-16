@@ -18,7 +18,7 @@ def fetch_pr_code(repo, pull_number):
     
     code_changes = []
     for file in files:
-       if file.get('filename', '').endswith('.java'):  # Adjust file extension as needed
+       if file.get('filename', '').endswith('.*'):  # Adjust file extension as needed
             file_url = file['raw_url']
             file_content = requests.get(file_url, headers=headers).text
             code_changes.append(file_content)
