@@ -15,7 +15,7 @@ def review_code(code, repo, pull_number, file_path):
     )
 
     review_result = response['choices'][0]['message']['content'].strip()
-    print(review_result)
+
     # Post the review result as comments on the pull request
     post_issue_comments(repo, pull_number, file_path, review_result)
 
@@ -27,16 +27,12 @@ def review_code(code, repo, pull_number, file_path):
 
 def post_issue_comments(repo, pull_number, file_path, review_result):
     headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
 
-    # Fetch commit ID and file paths affected by the pull request
-    try:
-        commit_id, file_paths = fetch_commit_details(repo, pull_number)
-    except Exception as e:
-        print(f"Error fetching commit details: {str(e)}")
-        return
+    # Fetch the latest commit ID associated with the file
+    commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
 
     # Example: Iterate through lines and post comments on each issue found
     lines = review_result.split('\n')
@@ -56,9 +52,26 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
                 print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
                 print(f"Response body: {response.text}")
 
-def fetch_commit_details(repo, pull_number):
+def fetch_latest_commit_id(repo, pull_number, file_path):
     headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        files = response.json()
+        for file in files:
+            if file['filename'] == file_path:
+                return file['contents_url'].split('?ref=')[1]
+        raise Exception(f"File {file_path} not found in the pull request.")
+    else:
+        raise Exception(f"Failed to fetch files for PR #{pull_number}. Status code: {response.status_code}")
+
+def fetch_commit_ids(repo, pull_number):
+    headers = {
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
@@ -66,20 +79,16 @@ def fetch_commit_details(repo, pull_number):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         commits = response.json()
-        commit_id = commits[-1]['sha'] if commits else None  # Use the latest commit in the PR
-        
-        if commit_id:
-            # Fetch file paths from the specific commit
-            file_paths = fetch_files_in_commit(repo, commit_id)
-            return commit_id, file_paths
-        else:
+        commit_ids = [commit['sha'] for commit in commits]
+        if not commit_ids:
             raise Exception("No commits found in the pull request.")
+        return commit_ids
     else:
         raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
 
 def fetch_files_in_commit(repo, commit_id):
     headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/commits/{commit_id}"
@@ -94,7 +103,7 @@ def fetch_files_in_commit(repo, commit_id):
 
 def fetch_file_content(repo, commit_id, file_path):
     headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={commit_id}"
@@ -112,30 +121,40 @@ def main():
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
 
     # File extensions to skip during review
-    skip_extensions = ['.md', '.txt', '.json','.py']
+    skip_extensions = ['.md', '.txt', '.json']
 
-    # Fetch all files in the pull request
-    commit_id, file_paths = fetch_commit_details(repo, pull_number)
+    # Fetch all commit IDs in the pull request
+    commit_ids = fetch_commit_ids(repo, pull_number)
 
-    # Perform code review for each file
     all_reviews_passed = True
-    for file_path in file_paths:
-        # Skip files with certain extensions
-        if any(file_path.endswith(ext) for ext in skip_extensions):
-            print(f"Skipping review for {file_path} due to its extension.")
-            continue
+    reviewed_files = set()
 
-        # Fetch the file content
-        file_content = fetch_file_content(repo, commit_id, file_path)
+    for commit_id in commit_ids:
+        # Fetch all files in the commit
+        file_paths = fetch_files_in_commit(repo, commit_id)
 
-        try:
-            review_result = review_code(file_content, repo, pull_number, file_path)
-            if not review_result:
-                print(f"Code review found issues in {file_path}.")
+        for file_path in file_paths:
+            # Skip files with certain extensions
+            if any(file_path.endswith(ext) for ext in skip_extensions):
+                print(f"Skipping review for {file_path} due to its extension.")
+                continue
+
+            # Ensure each file is reviewed only once
+            if file_path in reviewed_files:
+                continue
+            reviewed_files.add(file_path)
+
+            # Fetch the file content
+            file_content = fetch_file_content(repo, commit_id, file_path)
+
+            try:
+                review_result = review_code(file_content, repo, pull_number, file_path)
+                if not review_result:
+                    print(f"Code review found issues in {file_path}.")
+                    all_reviews_passed = False  # Mark that there were issues found
+            except Exception as e:
+                print(f"Error in code review for {file_path}: {str(e)}")
                 all_reviews_passed = False  # Mark that there were issues found
-        except Exception as e:
-            print(f"Error in code review for {file_path}: {str(e)}")
-            all_reviews_passed = False  # Mark that there were issues found
 
     if not all_reviews_passed:
         print("Code review found issues. Failing PR check.")
