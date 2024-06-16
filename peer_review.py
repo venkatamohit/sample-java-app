@@ -1,8 +1,9 @@
 import os
 import requests
 import openai
+import base64
 
-def review_code(code, repo, pull_number):
+def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
     response = openai.ChatCompletion.create(
@@ -16,7 +17,7 @@ def review_code(code, repo, pull_number):
     review_result = response['choices'][0]['message']['content'].strip()
 
     # Post the review result as comments on the pull request
-    post_issue_comments(repo, pull_number, "Automated Code Review", review_result)
+    post_issue_comments(repo, pull_number, file_path, review_result)
 
     # Check if issues were found and return the review result
     if "no issues found" in review_result.lower():
@@ -24,7 +25,7 @@ def review_code(code, repo, pull_number):
     else:
         return False  # Issues found
 
-def post_issue_comments(repo, pull_number, comment_title, review_result):
+def post_issue_comments(repo, pull_number, file_path, review_result):
     headers = {
         "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
@@ -41,20 +42,19 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
     lines = review_result.split('\n')
     for idx, line in enumerate(lines, start=1):
         if "Issue:" in line:  # Example condition to detect issues
-            for path in file_paths:
-                data = {
-                    "body": f"### {comment_title} (Line {idx})\n\n{line}",
-                    "path": path,
-                    "position": idx,
-                    "commit_id": commit_id
-                }
-                url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
-                response = requests.post(url, headers=headers, json=data)
-                if response.status_code == 201:
-                    print(f"Successfully posted comment on Line {idx} of PR #{pull_number}")
-                else:
-                    print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
-                    print(f"Response body: {response.text}")
+            data = {
+                "body": f"### Automated Code Review (Line {idx})\n\n{line}",
+                "path": file_path,
+                "position": idx,
+                "commit_id": commit_id
+            }
+            url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code == 201:
+                print(f"Successfully posted comment on Line {idx} of PR #{pull_number}")
+            else:
+                print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
+                print(f"Response body: {response.text}")
 
 def fetch_commit_details(repo, pull_number):
     headers = {
@@ -92,6 +92,21 @@ def fetch_files_in_commit(repo, commit_id):
     else:
         raise Exception(f"Failed to fetch files in commit {commit_id}. Status code: {response.status_code}")
 
+def fetch_file_content(repo, commit_id, file_path):
+    headers = {
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={commit_id}"
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        content = response.json().get('content', '')
+        content_bytes = base64.b64decode(content)
+        return content_bytes.decode('utf-8')
+    else:
+        raise Exception(f"Failed to fetch content for file {file_path}. Status code: {response.status_code}")
+
 def main():
     repo = "venkatamohit/sample-java-app"
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
@@ -106,7 +121,7 @@ def main():
         file_content = fetch_file_content(repo, commit_id, file_path)
 
         try:
-            review_result = review_code(file_content, repo, pull_number)
+            review_result = review_code(file_content, repo, pull_number, file_path)
             if not review_result:
                 print(f"Code review found issues in {file_path}.")
                 all_reviews_passed = False  # Mark that there were issues found
@@ -119,20 +134,6 @@ def main():
         exit(1)  # Exit with non-zero status to fail the PR check
     else:
         print("Code review passed. No issues found.")
-
-def fetch_file_content(repo, commit_id, file_path):
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-    url = f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={commit_id}"
-
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        content = response.json().get('content', '')
-        return content.decode('base64')
-    else:
-        raise Exception(f"Failed to fetch content for file {file_path}. Status code: {response.status_code}")
 
 if __name__ == "__main__":
     main()
