@@ -46,7 +46,7 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         data = {
             "body": comment,
             "path": file_path,
-            "position": line_number,
+            "position": line_number,  # Use the correct line number
             "commit_id": commit_id
         }
         url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
