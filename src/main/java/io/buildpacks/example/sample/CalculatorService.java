@@ -24,34 +24,45 @@ public class CalculatorService {
         return a / b;
     }
 
-    // Removed intentional errors
+    // Intentional errors added below
 
-    // Unused private method removed
-    // private void unusedPrivateMethod() {
-    //     System.out.println("This method is never used.");
-    // }
+    // Error 1: Uncommented method with syntax error
+    /*
+    public int modulo(int a, int b) {
+        return a % b;
+    */
 
-    // Unused parameter removed from subtract method
-    // public int subtract(int a, int b, int c) {
-    //     return a - b;
-    // }
+    // Error 2: Method with unreachable code
+    public int subtractWithUnusedParameter(int a, int b, int c) {
+        int result = a - b;
+        if (c > 0) {
+            return result;
+        } else {
+            return result; // Unreachable code here
+        }
+    }
 
-    // Removed misleading sum method
-    // public int sum(int a, int b) {
-    //     return a + b;
-    // }
+    // Error 3: Incorrect exception type in method signature
+    public int divide(int a, int b) throws ArithmeticException { // Should be IllegalArgumentException
+        if (b == 0) {
+            throw new ArithmeticException("Division by zero is not allowed.");
+        }
+        return a / b;
+    }
 
-    // Corrected divide method to throw IllegalArgumentException
-    // public int divide(int a, int b) {
-    //     try {
-    //         return a / b;
-    //     } catch (ArithmeticException e) {
-    //         return 0;
-    //     }
-    // }
+    // Error 4: Unhandled exception in method signature
+    public int safeDivide(int a, int b) { // Should declare throws IllegalArgumentException
+        if (b == 0) {
+            throw new IllegalArgumentException("Division by zero is not allowed.");
+        }
+        return a / b;
+    }
 
-    // Renamed Subtract method to follow naming convention
-    // public int Subtract(int a, int b) {
-    //     return a - b;
-    // }
+    // Error 5: Incorrect logic in method
+    public int divideByZero(int a, int b) throws IllegalArgumentException {
+        if (b != 0) { // Should be if (b == 0)
+            throw new IllegalArgumentException("Division by zero is not allowed.");
+        }
+        return a / b;
+    }
 }
