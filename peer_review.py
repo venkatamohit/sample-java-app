@@ -62,7 +62,7 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
     # Example: Iterate through lines and post comments on each issue found
     lines = review_result.split('\n')
     for idx, line in enumerate(lines, start=1):
-        if "Error:" in line:  # Example condition to detect issues
+        if "Error" in line:  # Example condition to detect issues
             comment_body = f"### {comment_title} (Line {idx})\n\n{line}"
             for path in file_paths:
                 data = {
