@@ -8,7 +8,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def fetch_pr_code(repo, pull_number):
     url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     response = requests.get(url, headers=headers)
