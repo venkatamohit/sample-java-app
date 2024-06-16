@@ -8,7 +8,7 @@ from github import Github, GithubIntegration
 def get_github_api_client():
     github_app_id = os.getenv('GITHUB_APP_ID')
     github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
-    github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY_PATH')
+    github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
 
     # Read private key file contents
     with open(github_private_key_path, 'r') as key_file:
