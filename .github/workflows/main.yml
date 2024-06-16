@@ -27,6 +27,9 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        GITHUB_APP_ID: ${{ secrets.MY_GITHUB_APP_ID }}
+        GITHUB_PRIVATE_KEY: ${{ secrets.MY_GITHUB_PRIVATE_KEY }}
+        GITHUB_INSTALLATION_ID: ${{ github.event.installation.id }}      
       run: |
         python peer_review.py
         script_exit_code=$?
