@@ -7,8 +7,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class GreetingController {
 
-    @GetMapping("/greet")
-    public String greet(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return String.format("Hello, %s!", name);
+    @GetMapping("/greeting")
+    public String greeting(@RequestParam(name="name", required=false, defaultValue="World") String name) {
+        return "Hello, " + name + "!";
+    }
+
+    // New method that throws an exception
+    @GetMapping("/error")
+    public String throwError() {
+        throw new RuntimeException("This is a deliberate error for PR review.");
     }
 }
