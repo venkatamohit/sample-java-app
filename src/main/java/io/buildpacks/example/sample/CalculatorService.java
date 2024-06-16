@@ -14,9 +14,10 @@ public class CalculatorService {
      * @param a The first integer.
      * @param b The second integer.
      * @return The sum of a and b.
+     * @throws IllegalArgumentException If any input is null.
      */
-    public int performAddition(int a, int b) {
-        // TODO: Add input parameter validation here if necessary
+    public int performAddition(Integer a, Integer b) {
+        validateInputs(a, b);
         return a + b;
     }
 
@@ -26,9 +27,10 @@ public class CalculatorService {
      * @param a The first integer (minuend).
      * @param b The second integer (subtrahend).
      * @return The result of subtracting b from a.
+     * @throws IllegalArgumentException If any input is null.
      */
-    public int performSubtraction(int a, int b) {
-        // TODO: Add input parameter validation here if necessary
+    public int performSubtraction(Integer a, Integer b) {
+        validateInputs(a, b);
         return a - b;
     }
 
@@ -38,9 +40,10 @@ public class CalculatorService {
      * @param a The first integer.
      * @param b The second integer.
      * @return The product of a and b.
+     * @throws IllegalArgumentException If any input is null.
      */
-    public int performMultiplication(int a, int b) {
-        // TODO: Add input parameter validation here if necessary
+    public int performMultiplication(Integer a, Integer b) {
+        validateInputs(a, b);
         return a * b;
     }
 
@@ -50,13 +53,29 @@ public class CalculatorService {
      * @param a The numerator.
      * @param b The denominator.
      * @return The result of dividing a by b.
-     * @throws IllegalArgumentException If b is zero.
+     * @throws ArithmeticException If b is zero.
+     * @throws IllegalArgumentException If any input is null.
      */
-    public int performDivision(int a, int b) throws IllegalArgumentException {
+    public int performDivision(Integer a, Integer b) throws ArithmeticException, IllegalArgumentException {
+        validateInputs(a, b);
         if (b == 0) {
-            throw new IllegalArgumentException("Division by zero is not allowed.");
+            throw new ArithmeticException("Division by zero is not allowed.");
         }
         return a / b;
+    }
+
+    /**
+     * Helper method to validate input parameters.
+     *
+     * @param inputs The input parameters to validate.
+     * @throws IllegalArgumentException If any input is null.
+     */
+    private void validateInputs(Integer... inputs) {
+        for (Integer input : inputs) {
+            if (input == null) {
+                throw new IllegalArgumentException("Input parameters cannot be null.");
+            }
+        }
     }
 
     // Other methods can be similarly refactored and documented as needed
