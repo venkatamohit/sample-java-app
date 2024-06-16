@@ -37,10 +37,12 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
 
     # Parse the review result and extract issues
     issues = parse_review_result(review_result)
+
     for issue in issues:
         line_number = issue['line_number']
         comment = issue['comment']
 
+        # Construct the comment data
         data = {
             "body": comment,
             "path": file_path,
@@ -49,6 +51,7 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         }
         url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
         response = requests.post(url, headers=headers, json=data)
+
         if response.status_code == 201:
             print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
         else:
