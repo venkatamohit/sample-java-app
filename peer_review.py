@@ -93,7 +93,7 @@ def fetch_commit_details(repo, pull_number):
         commit_id = files[0]['sha'] if files else "COMMIT_ID_HERE"
         return commit_id, file_paths
     else:
-        raise Exception(f"Failed to fetch commit details for PR #{pull_number}.
+        raise Exception(f"Failed to fetch commit details for PR #{pull_number}.. Status code: {response.status_code}")
 
 # Example usage
 def main():
