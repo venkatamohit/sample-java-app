@@ -25,7 +25,10 @@ def fetch_pr_code(repo, pull_number):
     
     return '\n\n'.join(code_changes)
 
-def review_code(code):
+def review_code(code, repo, pull_number):
+    openai.api_key = os.getenv('OPENAI_API_KEY')  # Set your OpenAI API key
+
+    # Request code review using ChatGPT
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -33,7 +36,19 @@ def review_code(code):
             {"role": "user", "content": f"Review the following code for any issues or improvements:\n\n{code}"}
         ]
     )
-    return response['choices'][0]['message']['content'].strip()
+
+    # Extract content from the response
+    review_result = response['choices'][0]['message']['content'].strip()
+
+    # Post the review result as a comment on the pull request
+    post_issue_comment(repo, pull_number, "Automated Code Review", review_result)
+
+    # Check if issues were found and return the review result
+    if "no issues found" in review_result.lower():
+        return True  # No issues found
+    else:
+        return False  # Issues found
+
 
 def post_issue_comment(repo, pull_number, comment_title, comment_body):
     url = f"https://api.github.com/repos/{repo}/issues/{pull_number}/comments"
@@ -62,15 +77,18 @@ def main():
     pull_number = os.getenv('GITHUB_PULL_NUMBER')  # Assumes this environment variable is set by GitHub Actions
     
     comment_title = "Automated Peer Review"
-    comment_body = """
-    Your automated peer review comment content goes here.
-    You can format it with Markdown as needed.
-    """
     code_to_review = fetch_pr_code(repo, pull_number)
-    review = review_code(code_to_review)
-    print("Review:", review)
-    
-    post_issue_comment(repo, pull_number, comment_title, review)
+    try:
+        review_result = review_code(code_to_review, repo, pull_number)
+        if not review_result:
+            print("Code review found issues. Failing PR check.")
+            exit(1)  # Exit with non-zero status to fail the PR check
+        else:
+            print("Code review passed. No issues found.")
+    except Exception as e:
+        print(f"Error in code review: {str(e)}")
+        exit(1)  # Exit with non-zero status in case of error
+
 
 if __name__ == "__main__":
     main()
