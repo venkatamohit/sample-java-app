@@ -108,17 +108,17 @@ def fetch_latest_commit_id(repo, pull_number, file_path):
         "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
-    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
+    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
 
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        files = response.json()
-        for file in files:
-            if file['filename'] == file_path:
-                return file['sha']
-        raise Exception(f"File {file_path} not found in the pull request.")
+        commits = response.json()
+        if commits:
+            return commits[-1]['sha']  # Use the latest commit's SHA
+        else:
+            raise Exception("No commits found in the pull request.")
     else:
-        raise Exception(f"Failed to fetch files for PR #{pull_number}. Status code: {response.status_code}")
+        raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
 
 def fetch_commit_ids(repo, pull_number):
     headers = {
