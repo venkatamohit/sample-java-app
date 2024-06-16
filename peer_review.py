@@ -93,12 +93,14 @@ def fetch_commit_details(repo, pull_number):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         commits = response.json()
-        commit_id = commits[0]['sha'] if commits else "COMMIT_ID_HERE"
+        commit_id = commits[-1]['sha'] if commits else None  # Use the latest commit in the PR
         
-        # Fetch file paths from the specific commit
-        file_paths = fetch_files_in_commit(repo, commit_id)
-        
-        return commit_id, file_paths
+        if commit_id:
+            # Fetch file paths from the specific commit
+            file_paths = fetch_files_in_commit(repo, commit_id)
+            return commit_id, file_paths
+        else:
+            raise Exception("No commits found in the pull request.")
     else:
         raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
         
