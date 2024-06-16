@@ -22,7 +22,7 @@ def review_code(code, repo, pull_number, file_path):
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a code review assistant."},
-            {"role": "user", "content": f"Review the following code for any issues and also provide recommendations:\n\n{code_to_review}"}
+            {"role": "user", "content": f"Review the following code for any issues:\n\n{code_to_review}"}
         ]
     )
 
