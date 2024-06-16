@@ -41,7 +41,7 @@ def review_code(code, repo, pull_number):
     review_result = response['choices'][0]['message']['content'].strip()
 
     # Post the review result as a comment on the pull request
-    post_issue_comment(repo, pull_number, "Automated Code Review", review_result)
+    post_issue_comments(repo, pull_number, "Automated Code Review", review_result)
 
     # Check if issues were found and return the review result
     if "no issues found" in review_result.lower():
@@ -79,10 +79,21 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
                     print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
                     print(f"Response body: {response.text}")
         
-def check_code_quality(code_to_review):
-    # Simplified example: Check if code_to_review meets quality standards
-    if "bad_code_pattern" in code_to_review:
-        raise Exception("Code review failed due to bad code pattern.")
+def fetch_commit_details(repo, pull_number):
+    headers = {
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        files = response.json()
+        file_paths = [file['filename'] for file in files]
+        commit_id = files[0]['sha'] if files else "COMMIT_ID_HERE"
+        return commit_id, file_paths
+    else:
+        raise Exception(f"Failed to fetch commit details for PR #{pull_number}.
 
 # Example usage
 def main():
