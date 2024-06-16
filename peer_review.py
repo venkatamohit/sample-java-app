@@ -35,28 +35,42 @@ def review_code(code):
     )
     return response['choices'][0]['message']['content'].strip()
 
-def post_review_comment(repo, pull_number, review_body):
+def post_issue_comment(repo, pull_number, comment_title, comment_body):
     url = f"https://api.github.com/repos/{repo}/issues/{pull_number}/comments"
     headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     data = {
-        "body": review_body
+        "body": f"### {comment_title}\n\n{comment_body}"  # Customize comment title format here
     }
     response = requests.post(url, headers=headers, json=data)
-    return response.json()
+    if response.status_code == 201:
+        print(f"Successfully posted comment to PR #{pull_number}")
+    else:
+        print(f"Failed to post comment to PR #{pull_number}. Status code: {response.status_code}")
+        print(f"Response body: {response.text}")
+        
+def check_code_quality(code_to_review):
+    # Simplified example: Check if code_to_review meets quality standards
+    if "bad_code_pattern" in code_to_review:
+        raise Exception("Code review failed due to bad code pattern.")
 
 # Example usage
 def main():
     repo = "venkatamohit/sample-java-app"
     pull_number = os.getenv('GITHUB_PULL_NUMBER')  # Assumes this environment variable is set by GitHub Actions
     
+    comment_title = "Automated Peer Review"
+    comment_body = """
+    Your automated peer review comment content goes here.
+    You can format it with Markdown as needed.
+    """
     code_to_review = fetch_pr_code(repo, pull_number)
     review = review_code(code_to_review)
     print("Review:", review)
     
-    post_review_comment(repo, pull_number, review)
+    post_issue_comment(repo, pull_number, comment_title, comment_body)
 
 if __name__ == "__main__":
     main()
