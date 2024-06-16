@@ -5,12 +5,15 @@ import requests
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def review_code(code):
-    response = openai.Completion.create(
-        engine="gpt-3.5-turbo",
-        prompt=f"Review the following code for any issues or improvements:\n\n{code}",
-        max_tokens=500
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a code review assistant."},
+            {"role": "user", "content": f"Review the following code for any issues or improvements:\n\n{code}"}
+        ]
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
+
 
 def post_review_comment(repo, pull_number, review_body):
     url = f"https://api.github.com/repos/{repo}/issues/{pull_number}/comments"
