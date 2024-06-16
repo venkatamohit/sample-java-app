@@ -77,19 +77,23 @@ def parse_review_result(review_result):
         if issues_content.startswith('Overall'):
             continue
 
-        # Extract individual issues and suggestions
-        issues_list = issues_content.split('\n\n')
+        # Extract individual issues and suggestions using "-" or ":"
+        issues_list = []
+        current_issue = ""
+        for char in issues_content:
+            if char == '-' or char == ':':
+                issues_list.append(current_issue.strip())
+                current_issue = ""
+            else:
+                current_issue += char
+        issues_list.append(current_issue.strip())  # Append the last issue
 
-        for issue in issues_list:
+        # Skip the first element as it contains the file path
+        for issue in issues_list[1:]:
             if issue.strip():  # Check if the issue is not empty
                 # Split the issue to get start line number and comment
-                comment_start_idx = issue.find('- ')
-                if comment_start_idx == -1:
-                    continue
-
-                # Extract start line number and comment
                 line_number = None
-                issue_content = issue[comment_start_idx + 2:].strip()
+                issue_content = issue.strip()
 
                 # Extract line number if available
                 line_number_idx = issue_content.find('. ')
@@ -106,7 +110,6 @@ def parse_review_result(review_result):
 
     return issues
 
-
 def fetch_latest_commit_id(repo, pull_number, file_path):
     headers = {
         "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
@@ -119,7 +122,7 @@ def fetch_latest_commit_id(repo, pull_number, file_path):
         files = response.json()
         for file in files:
             if file['filename'] == file_path:
-                return file['contents_url'].split('?ref=')[1]
+                return file['sha']
         raise Exception(f"File {file_path} not found in the pull request.")
     else:
         raise Exception(f"Failed to fetch files for PR #{pull_number}. Status code: {response.status_code}")
@@ -176,7 +179,7 @@ def main():
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
 
     # File extensions to skip during review
-    skip_extensions = ['.md', '.txt', '.json', '.py','.yml']
+    skip_extensions = ['.md', '.txt', '.json', '.py', '.yml']
 
     # Fetch all commit IDs in the pull request
     commit_ids = fetch_commit_ids(repo, pull_number)
