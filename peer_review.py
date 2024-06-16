@@ -50,21 +50,34 @@ def review_code(code, repo, pull_number):
         return False  # Issues found
 
 
-def post_issue_comment(repo, pull_number, comment_title, comment_body):
-    url = f"https://api.github.com/repos/{repo}/issues/{pull_number}/comments"
+def post_issue_comments(repo, pull_number, comment_title, review_result):
     headers = {
         "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
-    data = {
-        "body": f"### {comment_title}\n\n{comment_body}"  # Customize comment title format here
-    }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 201:
-        print(f"Successfully posted comment to PR #{pull_number}")
-    else:
-        print(f"Failed to post comment to PR #{pull_number}. Status code: {response.status_code}")
-        print(f"Response body: {response.text}")
+
+    # Fetch commit ID and file paths affected by the pull request
+    commit_id, file_paths = fetch_commit_details(repo, pull_number)
+
+    # Example: Iterate through lines and post comments on each issue found
+    lines = review_result.split('\n')
+    for idx, line in enumerate(lines, start=1):
+        if "Issue:" in line:  # Example condition to detect issues
+            comment_body = f"### {comment_title} (Line {idx})\n\n{line}"
+            for path in file_paths:
+                data = {
+                    "body": comment_body,
+                    "commit_id": commit_id,
+                    "path": path,
+                    "position": idx
+                }
+                url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/comments"
+                response = requests.post(url, headers=headers, json=data)
+                if response.status_code == 201:
+                    print(f"Successfully posted comment on Line {idx} of PR #{pull_number}")
+                else:
+                    print(f"Failed to post comment on Line {idx} of PR #{pull_number}. Status code: {response.status_code}")
+                    print(f"Response body: {response.text}")
         
 def check_code_quality(code_to_review):
     # Simplified example: Check if code_to_review meets quality standards
