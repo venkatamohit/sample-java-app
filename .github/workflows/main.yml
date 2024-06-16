@@ -29,7 +29,7 @@ jobs:
         MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         GITHUB_APP_ID: ${{ secrets.MY_GITHUB_APP_ID }}
         GITHUB_PRIVATE_KEY: ${{ secrets.MY_GITHUB_PRIVATE_KEY }}
-        GITHUB_INSTALLATION_ID: ${{ github.event.installation.id }}      
+        GITHUB_INSTALLATION_ID: ${{ secrets.MY_GITHUB_INSTALLATION_ID }}      
       run: |
         python peer_review.py
         script_exit_code=$?
