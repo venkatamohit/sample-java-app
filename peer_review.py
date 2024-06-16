@@ -39,7 +39,7 @@ def review_code(code, repo, pull_number):
 
     # Extract content from the response
     review_result = response['choices'][0]['message']['content'].strip()
-
+    print(review_result)
     # Post the review result as a comment on the pull request
     post_issue_comments(repo, pull_number, "Automated Code Review", review_result)
 
