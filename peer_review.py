@@ -15,7 +15,7 @@ def review_code(code, repo, pull_number, file_path):
     )
 
     review_result = response['choices'][0]['message']['content'].strip()
-
+    print(review_result)
     # Post the review result as comments on the pull request
     post_issue_comments(repo, pull_number, file_path, review_result)
 
@@ -111,12 +111,20 @@ def main():
     repo = "venkatamohit/sample-java-app"
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
 
+    # File extensions to skip during review
+    skip_extensions = ['.md', '.txt', '.json','.py']
+
     # Fetch all files in the pull request
     commit_id, file_paths = fetch_commit_details(repo, pull_number)
 
     # Perform code review for each file
     all_reviews_passed = True
     for file_path in file_paths:
+        # Skip files with certain extensions
+        if any(file_path.endswith(ext) for ext in skip_extensions):
+            print(f"Skipping review for {file_path} due to its extension.")
+            continue
+
         # Fetch the file content
         file_content = fetch_file_content(repo, commit_id, file_path)
 
