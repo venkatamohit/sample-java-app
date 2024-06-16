@@ -81,7 +81,7 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
 # Function to fetch commit ID and file paths affected by the pull request
 def fetch_commit_details(repo, pull_number):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
@@ -97,7 +97,21 @@ def fetch_commit_details(repo, pull_number):
         return commit_id, file_paths
     else:
         raise Exception(f"Failed to fetch commit details for PR #{pull_number}. Status code: {response.status_code}")
+        
+def fetch_files_in_commit(repo, commit_id):
+    headers = {
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    url = f"https://api.github.com/repos/{repo}/commits/{commit_id}/files"
 
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        files = response.json()
+        file_paths = [file['filename'] for file in files]
+        return file_paths
+    else:
+        raise Exception(f"Failed to fetch files in commit {commit_id}. Status code: {response.status_code}")
 # Example usage
 def main():
     repo = "venkatamohit/sample-java-app"
