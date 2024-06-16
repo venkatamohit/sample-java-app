@@ -15,6 +15,7 @@ def review_code(code, repo, pull_number, file_path):
     )
 
     review_result = response['choices'][0]['message']['content'].strip()
+    print(f"Review result for {file_path}:\n{review_result}")
 
     # Post the review result as comments on the pull request
     post_issue_comments(repo, pull_number, file_path, review_result)
@@ -27,7 +28,7 @@ def review_code(code, repo, pull_number, file_path):
 
 def post_issue_comments(repo, pull_number, file_path, review_result):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
 
@@ -54,7 +55,7 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/files"
@@ -71,7 +72,7 @@ def fetch_latest_commit_id(repo, pull_number, file_path):
 
 def fetch_commit_ids(repo, pull_number):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/pulls/{pull_number}/commits"
@@ -88,7 +89,7 @@ def fetch_commit_ids(repo, pull_number):
 
 def fetch_files_in_commit(repo, commit_id):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/commits/{commit_id}"
@@ -103,7 +104,7 @@ def fetch_files_in_commit(repo, commit_id):
 
 def fetch_file_content(repo, commit_id, file_path):
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     url = f"https://api.github.com/repos/{repo}/contents/{file_path}?ref={commit_id}"
@@ -121,7 +122,7 @@ def main():
     pull_number = os.getenv('GITHUB_PULL_NUMBER')
 
     # File extensions to skip during review
-    skip_extensions = ['.md', '.txt', '.json']
+    skip_extensions = ['.md', '.txt', '.json', '.py']
 
     # Fetch all commit IDs in the pull request
     commit_ids = fetch_commit_ids(repo, pull_number)
