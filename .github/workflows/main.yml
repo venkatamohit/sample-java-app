@@ -24,3 +24,8 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: python openai.py
+   
+    - name: Run post review script
+      env:
+        OPENAI_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+      run: python postreview.py
