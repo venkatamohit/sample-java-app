@@ -70,7 +70,7 @@ def main():
     review = review_code(code_to_review)
     print("Review:", review)
     
-    post_issue_comment(repo, pull_number, comment_title, comment_body)
+    post_issue_comment(repo, pull_number, comment_title, review)
 
 if __name__ == "__main__":
     main()
