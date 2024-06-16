@@ -82,12 +82,30 @@ def parse_review_result(review_result):
 
         for issue in issues_list:
             if issue.strip():  # Check if the issue is not empty
+                # Split the issue to get start line number and comment
+                comment_start_idx = issue.find('- ')
+                if comment_start_idx == -1:
+                    continue
+
+                # Extract start line number and comment
+                line_number = None
+                issue_content = issue[comment_start_idx + 2:].strip()
+
+                # Extract line number if available
+                line_number_idx = issue_content.find('. ')
+                if line_number_idx != -1:
+                    line_number_str = issue_content[:line_number_idx].strip()
+                    if line_number_str.isdigit():
+                        line_number = int(line_number_str)
+
                 issues.append({
                     "file_path": file_path,
-                    "comment": issue.strip()
+                    "line_number": line_number,
+                    "comment": issue_content
                 })
 
     return issues
+
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
     headers = {
