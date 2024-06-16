@@ -27,4 +27,10 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-      run: python peer_review.py
+      run: |
+        python peer_review.py
+        script_exit_code=$?
+        if [ $script_exit_code -ne 0 ]; then
+          echo "Peer review script failed. Failing the workflow."
+          exit 1
+        fi
