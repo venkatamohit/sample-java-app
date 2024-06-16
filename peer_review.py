@@ -58,14 +58,35 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
 def parse_review_result(review_result):
     # Example parser for the review result
     issues = []
-    lines = review_result.split('\n')
-    for idx, line in enumerate(lines, start=1):
-        if line.strip():  # Check if the line is not empty
-            issue = {
-                "line_number": idx,
-                "comment": line
-            }
-            issues.append(issue)
+
+    # Split the review_result into individual reviews
+    review_sections = review_result.split('\n\nReview result for ')
+
+    for section in review_sections:
+        if not section.strip():  # Skip empty sections
+            continue
+
+        # Extract the file path from the section header
+        header_end_idx = section.find(':')
+        if header_end_idx == -1:
+            continue
+        
+        file_path = section[:header_end_idx].strip()
+        issues_content = section[header_end_idx + 1:].strip()
+
+        if issues_content.startswith('Overall'):
+            continue
+
+        # Extract individual issues and suggestions
+        issues_list = issues_content.split('\n\n')
+
+        for issue in issues_list:
+            if issue.strip():  # Check if the issue is not empty
+                issues.append({
+                    "file_path": file_path,
+                    "comment": issue.strip()
+                })
+
     return issues
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
