@@ -57,7 +57,11 @@ def post_issue_comments(repo, pull_number, comment_title, review_result):
     }
 
     # Fetch commit ID and file paths affected by the pull request
-    commit_id, file_paths = fetch_commit_details(repo, pull_number)
+    try:
+        commit_id, file_paths = fetch_commit_details(repo, pull_number)
+    except Exception as e:
+        print(f"Error fetching commit details: {str(e)}")
+        return
 
     # Example: Iterate through lines and post comments on each issue found
     lines = review_result.split('\n')
