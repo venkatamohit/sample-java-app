@@ -12,11 +12,13 @@ def fetch_pr_code(repo, pull_number):
         "Accept": "application/vnd.github.v3+json"
     }
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch PR files: {response.text}")
     files = response.json()
     
     code_changes = []
     for file in files:
-        if file['filename'].endswith('.java'):  # Adjust file extension as needed
+       if file.get('filename', '').endswith('.java'):  # Adjust file extension as needed
             file_url = file['raw_url']
             file_content = requests.get(file_url, headers=headers).text
             code_changes.append(file_content)
