@@ -38,7 +38,7 @@ def review_code(code):
 def post_issue_comment(repo, pull_number, comment_title, comment_body):
     url = f"https://api.github.com/repos/{repo}/issues/{pull_number}/comments"
     headers = {
-        "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
         "Accept": "application/vnd.github.v3+json"
     }
     data = {
