@@ -20,7 +20,10 @@ jobs:
     - name: Install dependencies
       run: pip install openai==0.28 requests
 
-    - name: Run review script
+    - name: Set PR number in environment variable
+      run: echo "GITHUB_PULL_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
+
+    - name: Run peer review script
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
