@@ -6,16 +6,28 @@ from dotenv import load_dotenv
 from github import Github, GithubIntegration
 
 def get_github_api_client():
-    load_dotenv()
     github_app_id = os.getenv('GITHUB_APP_ID')
     github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
-    private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
+    github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY_PATH')
 
-    integration = GithubIntegration(github_app_id, private_key_path)
-    installation = integration.get_installation(github_installation_id)
+    # Read private key file contents
+    with open(github_private_key_path, 'r') as key_file:
+        private_key = key_file.read()
+
+    # Create GitHub Integration
+    integration = GithubIntegration(github_app_id, private_key)
+
+    # Get installation access token
+    installation_id = int(github_installation_id)
+    installation = integration.get_repo_installation(repo_id=installation_id)
+
+    # Create installation access token
     access_token = installation.create_access_token()
 
-    return Github(access_token)
+    # Create GitHub client with access token
+    github_client = Github(access_token)
+
+    return github_client
 
 def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
