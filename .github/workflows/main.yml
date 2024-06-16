@@ -18,7 +18,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install openai==0.28 requests python-dotenv
+      run: pip install openai==0.28 requests python-dotenv PyGithub
 
     - name: Set PR number in environment variable
       run: echo "GITHUB_PULL_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
