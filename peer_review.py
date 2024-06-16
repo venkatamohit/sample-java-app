@@ -9,7 +9,7 @@ def get_github_api_client():
     load_dotenv()
     github_app_id = os.getenv('GITHUB_APP_ID')
     github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
-    private_key_path = os.getenv('PRIVATE_KEY_PATH')
+    private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
 
     integration = GithubIntegration(github_app_id, private_key_path)
     installation = integration.get_installation(github_installation_id)
