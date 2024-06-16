@@ -36,7 +36,7 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
 
     # Parse the review result and extract issues
-    issues = parse_review_result(review_result)
+    issues = parse_review_result(review_result, file_path)
 
     for issue in issues:
         line_number = issue['line_number']
@@ -58,7 +58,7 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
             print(f"Failed to post comment on Line {line_number} of PR #{pull_number}. Status code: {response.status_code}")
             print(f"Response body: {response.text}")
 
-def parse_review_result(review_result):
+def parse_review_result(review_result, file_path):
     issues = []
 
     # Split the review_result into individual reviews
@@ -73,13 +73,13 @@ def parse_review_result(review_result):
         if header_end_idx == -1:
             continue
         
-        file_path = section[:header_end_idx].strip()
+        section_header = section[:header_end_idx].strip()
         issues_content = section[header_end_idx + 1:].strip()
 
         if issues_content.startswith('Overall'):
             continue
 
-        # Extract individual issues and suggestions using "-" or ":"
+        # Extract individual issues and suggestions
         issues_list = issues_content.split('\n\n')
 
         for issue in issues_list:
