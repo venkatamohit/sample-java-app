@@ -150,7 +150,7 @@ def fetch_file_content(repo, commit_id, file_path):
     print(f"{commit_id}")
     print(f"{file_path}")
     print(f"{repo}")
-   try:
+    try:
         # Print debug info
         print(f"Fetching content of file: {file_path} at commit: {commit_id}")
         
