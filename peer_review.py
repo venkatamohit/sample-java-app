@@ -131,7 +131,6 @@ def fetch_latest_commit_id(repo, pull_number, file_path):
     repo = github_client.get_repo(repo)
     pr = repo.get_pull(pull_number)
     commits = pr.get_commits()
-    print("hello")
     if commits.totalCount > 0:
         return commits[commits.totalCount - 1].sha  # Use the latest commit's SHA
     else:
@@ -148,10 +147,12 @@ def fetch_files_in_pull_request(repo, pull_number):
 def fetch_file_content(repo, commit_id, file_path):
     github_client = get_github_api_client()
     repo = github_client.get_repo(repo)
-    
+    print(f"{commit_id}")
+    print(f"{file_path}")
+    print(f"{repo}")
     # Fetch contents of the file at specific commit
     contents = repo.get_contents(file_path, ref=commit_id)
-    
+    print(contents)
     # Decode and return content
     return base64.b64decode(contents.content).decode('utf-8')
 
