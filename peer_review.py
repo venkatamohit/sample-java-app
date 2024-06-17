@@ -131,7 +131,7 @@ def fetch_latest_commit_id(repo, pull_number, file_path):
     repo = github_client.get_repo(repo)
     pr = repo.get_pull(pull_number)
     commits = pr.get_commits()
-
+    print("hello")
     if commits.totalCount > 0:
         return commits[commits.totalCount - 1].sha  # Use the latest commit's SHA
     else:
@@ -184,13 +184,11 @@ def main():
             repo = github_client.get_repo(repo)
             pr = repo.get_pull(pull_number)
             commits = pr.get_commits()
-            print(commits)
             for commit in commits:
                 commit_sha = commit.sha
-
                 # Fetch the file content using the commit SHA
                 file_content = fetch_file_content(repo, commit_sha, file_path)
-
+                print(file_content)
                 # Review the file content
                 review_result = review_code(file_content, repo, pull_number, file_path)
                 if not review_result:
