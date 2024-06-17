@@ -51,7 +51,7 @@ def review_code(code, repo, pull_number, file_path):
     print(f"Filtered Result: {filtered_review_result}")
 
     # Check if issues were found and return the review result
-    if "no issues found" in filtered_review_result.lower() or "code looks good" in filtered_review_result.lower() or not issue_lines:
+    if "no issues found" in filtered_review_result.lower() or "code looks good" in filtered_review_result.lower() or "code looks well-written" in filtered_review_result.lower() or not issue_lines:
         return True  # No issues found
     else:
         # Post the review result as comments on the pull request
