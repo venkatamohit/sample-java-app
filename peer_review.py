@@ -69,7 +69,6 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
     commit_id = fetch_latest_commit_id(repo_name, pull_number, file_path)
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
-    print(issues)
     for issue in issues:
         line_number = issue['line_number']
         comment = issue['comment']
