@@ -20,7 +20,7 @@ public class Main {
         }
         return result;
     }
-
+    Main method that demonstrates the usage of the factorial method.
     /**
      * Main method that demonstrates the usage of the factorial method.
      * @param args Command-line arguments (not used in this example).
