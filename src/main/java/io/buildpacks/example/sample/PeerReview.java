@@ -21,7 +21,7 @@ public class Main {
         }
         return result;
     }
-    Main method that demonstrates the usage of the factorial method.
+    
     /**
      * Main method that demonstrates the usage of the factorial method.
      *
@@ -31,5 +31,13 @@ public class Main {
         int number = 5;
         int fact = factorial(number);
         System.out.println("Factorial of " + number + " is: " + fact);
+        
+        // Introducing intentional issues
+        // Incorrect method call, should be factorial(5)
+        int incorrectFact = factorial(6); // This will calculate 6! instead of 5!
+        System.out.println("Factorial of 6 is: " + incorrectFact);
+        
+        // Uncomment the following line to introduce a compilation error
+        // int x = "string"; // This will cause a compilation error
     }
 }
