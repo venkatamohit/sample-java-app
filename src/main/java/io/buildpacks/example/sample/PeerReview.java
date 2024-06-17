@@ -1,39 +1,35 @@
-package io.buildpacks.example.sample;
+package com.example;
 
 /**
- * The MathOperations class provides a method to perform basic mathematical operations.
- * This class currently contains a method to sum two integers.
+ * This class demonstrates a simple example of a Java program.
  */
-public class MathOperations {
+public class Main {
 
     /**
-     * Sums two integers.
-     * <p>
-     * This method takes two integers as input parameters and returns their sum.
-     * It is a straightforward implementation of addition.
-     * 
-     * @param a the first integer
-     * @param b the second integer
-     * @return the sum of a and b
+     * Calculates the factorial of a given number.
+     *
+     * @param n The number for which factorial needs to be calculated.
+     * @return The factorial of n.
      */
-    public int sum(int a, int b) {
-        return a + b;
+    public static int factorial(int n) {
+        if (n == 0) {
+            return 1;
+        }
+        int result = 1;
+        for (int i = 1; i <= n; i++) {
+            result *= i;
+        }
+        return result;
     }
 
     /**
-     * Main method to test the sum method.
-     * <p>
-     * This method creates an instance of the MathOperations class and tests the sum method
-     * by printing the results of summing different pairs of integers.
-     * 
-     * @param args command-line arguments (not used)
+     * Main method that demonstrates the usage of the factorial method.
+     *
+     * @param args Command-line arguments (not used in this example).
      */
     public static void main(String[] args) {
-        MathOperations mathOperations = new MathOperations();
-
-        // Test the sum method and print the results
-        System.out.println("Sum of 1 and 2: " + mathOperations.sum(1, 2)); // Expected output: 3
-        System.out.println("Sum of 3 and 4: " + mathOperations.sum(3, 4)); // Expected output: 7
-        System.out.println("Sum of 5 and 6: " + mathOperations.sum(5, 6)); // Expected output: 11
+        int number = 5;
+        int fact = factorial(number);
+        System.out.println("Factorial of " + number + " is: " + fact);
     }
 }
