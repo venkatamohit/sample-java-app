@@ -67,14 +67,12 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
     repo_obj = github_client.get_repo(repo_name)
     # Fetch the latest commit ID associated with the file
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
-    print(commit_id)
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
-
+    print(issues)
     for issue in issues:
         line_number = issue['line_number']
         comment = issue['comment']
-
         # If line_number is None, post a regular PR comment
         if line_number is None:
             try:
@@ -91,7 +89,6 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
                 "commit_id": commit_id,
                 "position": line_number
             }
-
             # Post the comment using PyGithub
             try:
                 pull_request = repo_obj.get_pull(pull_number)
