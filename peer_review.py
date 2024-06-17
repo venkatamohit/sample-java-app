@@ -184,7 +184,7 @@ def main():
             repo = github_client.get_repo(repo)
             pr = repo.get_pull(pull_number)
             commits = pr.get_commits()
-
+            print(commits)
             for commit in commits:
                 commit_sha = commit.sha
 
