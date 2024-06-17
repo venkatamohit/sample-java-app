@@ -44,19 +44,25 @@ def review_code(code, repo, pull_number, file_path):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system", "content": "You are a code review assistant."},
-            {"role": "user", "content": f"Review the following code only for any issues:\n\n{code_to_review}"}
+            {"role": "system", "content": "You are a code review assistant. Only highlight issues in the code."},
+            {"role": "user", "content": f"Review the following code for any issues:\n\n{code_to_review}"}
         ]
     )
 
     review_result = response['choices'][0]['message']['content'].strip()
     print(f"Review result for {file_path}:\n{review_result}")
 
+    # Filter out non-issue lines
+    issue_keywords = ["issue", "error", "bug", "problem", "fix", "improve", "incorrect", "mistake"]
+    issue_lines = [line for line in review_result.split('\n') if any(keyword in line.lower() for keyword in issue_keywords)]
+
+    filtered_review_result = '\n'.join(issue_lines)
+
     # Post the review result as comments on the pull request
-    post_issue_comments(repo, pull_number, file_path, review_result)
+    post_issue_comments(repo, pull_number, file_path, filtered_review_result)
 
     # Check if issues were found and return the review result
-    if "no issues found" in review_result.lower():
+    if "no issues found" in filtered_review_result.lower() or not issue_lines:
         return True  # No issues found
     else:
         return False  # Issues found
