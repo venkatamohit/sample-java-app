@@ -147,6 +147,7 @@ def fetch_files_in_pull_request(repo, pull_number):
 def fetch_file_content(repo, commit_id, file_path):
     print("Test")
     github_client = get_github_api_client()
+    print("TEST2")
     repo = github_client.get_repo(repo)
     print(f"{commit_id}")
     print(f"{file_path}")
