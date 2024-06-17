@@ -149,7 +149,11 @@ def fetch_files_in_pull_request(repo, pull_number):
 def fetch_file_content(repo, commit_id, file_path):
     github_client = get_github_api_client()
     repo = github_client.get_repo(repo)
+    
+    # Fetch contents of the file at specific commit
     contents = repo.get_contents(file_path, ref=commit_id)
+    
+    # Decode and return content
     return base64.b64decode(contents.content).decode('utf-8')
 
 def main():
@@ -177,7 +181,13 @@ def main():
 
         try:
             # Fetch the latest file content
-            file_content = fetch_file_content(repo, 'HEAD', file_path)
+            github_client = get_github_api_client()
+            repo = github_client.get_repo(repo)
+            pr = repo.get_pull(pull_number)
+            latest_commit_sha = pr.head.sha
+
+            # Fetch the latest file content
+            file_content = fetch_file_content(repo, latest_commit_sha, file_path)
 
             review_result = review_code(file_content, repo, pull_number, file_path)
             if not review_result:
