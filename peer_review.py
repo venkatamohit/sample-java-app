@@ -66,7 +66,7 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
     # Get the repository object
     repo_obj = github_client.get_repo(repo_name)
     # Fetch the latest commit ID associated with the file
-    commit_id = fetch_latest_commit_id(repo_name.full_name, pull_number, file_path)
+    commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
 
