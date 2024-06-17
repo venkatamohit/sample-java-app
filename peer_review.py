@@ -162,7 +162,7 @@ def main():
     pull_number = int(os.getenv('GITHUB_PULL_NUMBER'))
 
     # File extensions to skip during review
-    skip_extensions = ['.md', '.txt', '.json', '.py', '.yml']
+    skip_extensions = ['.md', '.txt', '.json', '.py', '.yml','.pem']
 
     # Fetch all files in the pull request
     file_paths = fetch_files_in_pull_request(repo, pull_number)
