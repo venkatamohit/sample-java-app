@@ -203,7 +203,7 @@ def main():
                 commit_sha = commit.sha
                 print(commit_sha)
                 # Fetch the file content using the commit SHA
-                print(fetch_file_content(repo, commit_sha, file_path))
+                print("this is repo:"+repo)
                 file_content = fetch_file_content(repo, commit_sha, file_path)
                 print(file_content)
                 # Review the file content
