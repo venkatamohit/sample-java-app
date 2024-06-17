@@ -30,16 +30,7 @@ def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
     # Split the code into lines
-    lines = code.splitlines()
-    non_commented_lines = []
-
-    # Filter out commented lines
-    for line_number, line in enumerate(lines, start=1):
-        if not line.strip().startswith('//') and not line.strip().startswith('/*'):
-            non_commented_lines.append(line)
-
-    # Join non-commented lines back into code
-    code_to_review = '\n'.join(non_commented_lines)
+    code_to_review = code.strip()
 
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
