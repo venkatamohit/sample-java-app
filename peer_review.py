@@ -31,7 +31,7 @@ def review_code(code, repo, pull_number, file_path):
 
     # Split the code into lines
     code_to_review = code.strip()
-
+    print(code_to_review)
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
