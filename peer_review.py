@@ -13,13 +13,16 @@ def get_github_api_client():
     github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
     repo_name = os.getenv('GITHUB_REPOSITORY')
 
+    # Extract the owner and repository name
+    owner, repo = repo_name.split('/')
+
     with open(github_private_key_path, 'r') as key_file:
         private_key = key_file.read()
 
     integration = GithubIntegration(github_app_id, private_key)
 
     # Get the installation ID for the repository
-    installation = integration.get_repo_installation(repo_name)
+    installation = integration.get_repo_installation(owner, repo)
     access_token = integration.get_access_token(installation.id).token
     return Github(login_or_token=access_token)
 
