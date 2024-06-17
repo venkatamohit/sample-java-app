@@ -208,8 +208,9 @@ def main():
             commits = pr.get_commits()
             for commit in commits:
                 commit_sha = commit.sha
+                commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
                 # Fetch the file content using the commit SHA
-                file_content = fetch_file_content(repo, commit_sha, file_path)
+                file_content = fetch_file_content(repo, commit_id, file_path)
                 # Review the file content
                 review_result = review_code(file_content, repo, pull_number, file_path)
                 if not review_result:
