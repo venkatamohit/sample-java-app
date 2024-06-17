@@ -180,18 +180,28 @@ def main():
 
         try:
             # Fetch the latest file content
-            github_client = get_github_api_client()
+           github_client = get_github_api_client()
             repo = github_client.get_repo(repo)
             pr = repo.get_pull(pull_number)
-            latest_commit_sha = pr.head.sha
+            commits = pr.get_commits()
 
-            # Fetch the latest file content
-            file_content = fetch_file_content(repo, latest_commit_sha, file_path)
-            print(file_content)
-            review_result = review_code(file_content, repo, pull_number, file_path)
-            if not review_result:
-                print(f"Code review found issues in {file_path}.")
-                all_reviews_passed = False  # Mark that there were issues found
+            for commit in commits:
+                commit_sha = commit.sha
+
+                # Fetch the file content using the commit SHA
+                file_content = fetch_file_content(repo, commit_sha, file_path)
+
+                # Review the file content
+                review_result = review_code(file_content, repo, pull_number, file_path)
+                if not review_result:
+                    print(f"Code review found issues in {file_path} at commit {commit_sha}.")
+                    all_reviews_passed = False  # Mark that there were issues found
+                    break  # No need to review further commits for this file
+                else:
+                    print(f"Code review passed for {file_path} at commit {commit_sha}.")
+
+                # Assuming you only want to review the latest version of each file
+                break  # Stop processing further commits for this file
         except Exception as e:
             print(f"Error in code review for {file_path}: {str(e)}")
             all_reviews_passed = False  # Mark that there were issues found
