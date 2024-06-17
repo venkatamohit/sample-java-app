@@ -58,13 +58,15 @@ def review_code(code, repo, pull_number, file_path):
         post_issue_comments(repo, pull_number, file_path, filtered_review_result)
         return False  # Issues found
 
-def post_issue_comments(repo, pull_number, file_path, review_result):
+def post_issue_comments(repo_name, pull_number, file_path, review_result):
     github_client = get_github_api_client()
-    repo = github_client.get_repo(repo)
-
+    repo_name = os.getenv('GITHUB_REPOSITORY')
+    # Extract the owner and repository name from the repo_name string
+    owner, repo = repo_name.split('/')
+    # Get the repository object
+    repo_obj = github_client.get_repo(repo_name)
     # Fetch the latest commit ID associated with the file
-    commit_id = fetch_latest_commit_id(repo.full_name, pull_number, file_path)
-
+    commit_id = fetch_latest_commit_id(repo_name.full_name, pull_number, file_path)
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
 
@@ -126,44 +128,48 @@ def parse_review_result(review_result, file_path):
 
     return issues
 
-def fetch_latest_commit_id(repo, pull_number, file_path):
+def fetch_latest_commit_id(repo_name, pull_number, file_path):
     github_client = get_github_api_client()
-    repo = github_client.get_repo(repo)
-    pr = repo.get_pull(pull_number)
+    repo_name = os.getenv('GITHUB_REPOSITORY')
+    # Extract the owner and repository name from the repo_name string
+    owner, repo = repo_name.split('/')
+    # Get the repository object
+    repo_obj = github_client.get_repo(repo_name)
+    # Get the pull request and commits
+    pr = repo_obj.get_pull(pull_number)
     commits = pr.get_commits()
+    
     if commits.totalCount > 0:
         return commits[commits.totalCount - 1].sha  # Use the latest commit's SHA
     else:
         raise Exception("No commits found in the pull request.")
 
-def fetch_files_in_pull_request(repo, pull_number):
+def fetch_files_in_pull_request(repo_name, pull_number):
     github_client = get_github_api_client()
-    repo = github_client.get_repo(repo)
-    pr = repo.get_pull(pull_number)
+    repo_name = os.getenv('GITHUB_REPOSITORY')
+    # Extract the owner and repository name from the repo_name string
+    owner, repo = repo_name.split('/')
+    # Get the repository object
+    repo_obj = github_client.get_repo(repo_name)
+    # Get the pull request and commits
+    pr = repo_obj.get_pull(pull_number)
     files = pr.get_files()
     file_paths = [file.filename for file in files]
     return file_paths
 
 def fetch_file_content(repo_name, commit_id, file_path):
-    print("Test")
     github_client = get_github_api_client()
-    print("TEST2")
     repo_name = os.getenv('GITHUB_REPOSITORY')
     owner, repo = repo_name.split('/')
     repo_obj = github_client.get_repo(repo_name)
-    #repo = github_client.get_repo(repo)
-    print("TEST3")
-    print(file_path)
-    print(repo)
+
     try:
         # Print debug info
         print(f"Fetching content of file: {file_path} at commit: {commit_id}")     
         # Fetch contents from GitHub
         contents = repo_obj.get_contents(file_path, ref=commit_id)
-        
         # Print content for debugging
         print(f"Content fetched: {contents.content[:100]}")  # Print part of the content
-        
         # Decode and return content
         return base64.b64decode(contents.content).decode('utf-8')
     except Exception as e:
@@ -201,12 +207,9 @@ def main():
             pr = repo.get_pull(pull_number)
             commits = pr.get_commits()
             for commit in commits:
-                print(commit)
                 commit_sha = commit.sha
-                print(commit_sha)
                 # Fetch the file content using the commit SHA
                 file_content = fetch_file_content(repo, commit_sha, file_path)
-                print(file_content)
                 # Review the file content
                 review_result = review_code(file_content, repo, pull_number, file_path)
                 if not review_result:
