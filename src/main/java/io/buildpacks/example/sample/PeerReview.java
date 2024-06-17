@@ -8,6 +8,9 @@ public class PeerReview {
 
     /**
      * Sums two integers.
+     * <p>
+     * This method takes two integers as input parameters and returns their sum.
+     * It is a straightforward implementation of addition.
      * 
      * @param a the first integer
      * @param b the second integer
@@ -19,6 +22,9 @@ public class PeerReview {
 
     /**
      * Main method to test the sum method.
+     * <p>
+     * This method creates an instance of the PeerReview class and tests the sum method
+     * by printing the results of summing different pairs of integers.
      * 
      * @param args command-line arguments (not used)
      */
