@@ -180,7 +180,7 @@ def main():
 
         try:
             # Fetch the latest file content
-           github_client = get_github_api_client()
+            github_client = get_github_api_client()
             repo = github_client.get_repo(repo)
             pr = repo.get_pull(pull_number)
             commits = pr.get_commits()
