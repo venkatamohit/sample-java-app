@@ -149,9 +149,9 @@ def fetch_file_content(repo, commit_id, file_path):
     github_client = get_github_api_client()
     print("TEST2")
     repo = github_client.get_repo(repo)
-    print(f"{commit_id}")
-    print(f"{file_path}")
-    print(f"{repo}")
+    print(commit_id)
+    print(file_path)
+    print(repo)
     try:
         # Print debug info
         print(f"Fetching content of file: {file_path} at commit: {commit_id}")     
@@ -202,6 +202,7 @@ def main():
                 commit_sha = commit.sha
                 print(commit_sha)
                 # Fetch the file content using the commit SHA
+                print(fetch_file_content(repo, commit_sha, file_path))
                 file_content = fetch_file_content(repo, commit_sha, file_path)
                 print(file_content)
                 # Review the file content
