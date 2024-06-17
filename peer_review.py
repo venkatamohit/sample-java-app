@@ -144,12 +144,12 @@ def fetch_files_in_pull_request(repo, pull_number):
     file_paths = [file.filename for file in files]
     return file_paths
 
-def fetch_file_content(repo, commit_id, file_path):
+def fetch_file_content(repo_name, commit_id, file_path):
     print("Test")
     github_client = get_github_api_client()
     print("TEST2")
-    owner, repo = repo.split('/')
-    repo_obj = github_client.get_repo(repo)
+    owner, repo = repo_name.split('/')
+    repo_obj = github_client.get_repo(repo_name)
     #repo = github_client.get_repo(repo)
     print("TEST3")
     print(file_path)
