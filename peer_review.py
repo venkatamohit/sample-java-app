@@ -57,8 +57,9 @@ def review_code(code, repo, pull_number, file_path):
     issue_lines = [line for line in review_result.split('\n') if any(keyword in line.lower() for keyword in issue_keywords)]
 
     filtered_review_result = '\n'.join(issue_lines)
-    print(filtered_review_result)
+    print(f"Filtered Result: {filtered_review_result}")
     # Post the review result as comments on the pull request
+    post_issue_comments(repo, pull_number, file_path, review_result)
     post_issue_comments(repo, pull_number, file_path, filtered_review_result)
 
     # Check if issues were found and return the review result
