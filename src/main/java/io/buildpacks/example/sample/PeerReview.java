@@ -1,11 +1,5 @@
 public class IntegerCalculator {
     // Class to perform integer addition
-    /**
-     * This method calculates the sum of two integers.
-     * @param a the first integer
-     * @param b the second integer
-     * @return the sum of a and b
-     */
     public static int sum(int a, int b) {
         return a + b;
     }
