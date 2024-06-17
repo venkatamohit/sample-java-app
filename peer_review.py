@@ -31,7 +31,6 @@ def review_code(code, repo, pull_number, file_path):
 
     # Split the code into lines
     code_to_review = code.strip()
-    print(code_to_review)
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -188,7 +187,7 @@ def main():
 
             # Fetch the latest file content
             file_content = fetch_file_content(repo, latest_commit_sha, file_path)
-
+            print(file_content)
             review_result = review_code(file_content, repo, pull_number, file_path)
             if not review_result:
                 print(f"Code review found issues in {file_path}.")
