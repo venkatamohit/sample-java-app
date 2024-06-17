@@ -149,7 +149,8 @@ def fetch_file_content(repo, commit_id, file_path):
     github_client = get_github_api_client()
     print("TEST2")
     repo = github_client.get_repo(repo)
-    print(commit_id)
+    print(github_client.get_repo(repo))
+    print("TEST3")
     print(file_path)
     print(repo)
     try:
