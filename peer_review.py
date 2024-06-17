@@ -73,22 +73,30 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         line_number = issue['line_number']
         comment = issue['comment']
 
-        # Construct the comment data
-        data = {
-            "body": comment,
-            "path": file_path,
-            "commit_id": commit_id
-        }
-        if line_number:
-            data["position"] = line_number
+        # If line_number is None, post a regular PR comment
+        if line_number is None:
+            try:
+                pull_request = repo.get_pull(pull_number)
+                pull_request.create_issue_comment(comment)
+                print(f"Successfully posted general comment on PR #{pull_number}")
+            except Exception as e:
+                print(f"Failed to post general comment on PR #{pull_number}: {str(e)}")
+        else:
+            # Construct the comment data with position if line_number is provided
+            data = {
+                "body": comment,
+                "path": file_path,
+                "commit_id": commit_id,
+                "position": line_number
+            }
 
-        # Post the comment using PyGithub
-        try:
-            pull_request = repo.get_pull(pull_number)
-            pull_request.create_review_comment(data["body"], data["commit_id"], file_path, line_number)
-            print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
-        except Exception as e:
-            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}: {str(e)}")
+            # Post the comment using PyGithub
+            try:
+                pull_request = repo.get_pull(pull_number)
+                pull_request.create_review_comment(data["body"], data["commit_id"], file_path, line_number)
+                print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
+            except Exception as e:
+                print(f"Failed to post comment on Line {line_number} of PR #{pull_number}: {str(e)}")
 
 def parse_review_result(review_result, file_path):
     issues = []
@@ -179,11 +187,19 @@ def main():
             print(f"Error in code review for {file_path}: {str(e)}")
             all_reviews_passed = False  # Mark that there were issues found
 
-    if not all_reviews_passed:
+    if all_reviews_passed:
+        # Post a success comment indicating no issues found
+        try:
+            github_client = get_github_api_client()
+            repo = github_client.get_repo(repo)
+            pull_request = repo.get_pull(pull_number)
+            pull_request.create_issue_comment("Code review passed. No issues found.")
+            print("Successfully posted comment indicating no issues found.")
+        except Exception as e:
+            print(f"Failed to post comment indicating no issues found: {str(e)}")
+    else:
         print("Code review found issues. Failing PR check.")
         exit(1)  # Exit with non-zero status to fail the PR check
-    else:
-        print("Code review passed. No issues found.")
 
 if __name__ == "__main__":
     main()
