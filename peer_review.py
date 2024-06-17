@@ -145,6 +145,7 @@ def fetch_files_in_pull_request(repo, pull_number):
     return file_paths
 
 def fetch_file_content(repo, commit_id, file_path):
+    print("Test")
     github_client = get_github_api_client()
     repo = github_client.get_repo(repo)
     print(f"{commit_id}")
@@ -152,8 +153,7 @@ def fetch_file_content(repo, commit_id, file_path):
     print(f"{repo}")
     try:
         # Print debug info
-        print(f"Fetching content of file: {file_path} at commit: {commit_id}")
-        
+        print(f"Fetching content of file: {file_path} at commit: {commit_id}")     
         # Fetch contents from GitHub
         contents = repo.get_contents(file_path, ref=commit_id)
         
@@ -197,7 +197,9 @@ def main():
             pr = repo.get_pull(pull_number)
             commits = pr.get_commits()
             for commit in commits:
+                print(commit)
                 commit_sha = commit.sha
+                print(commit_sha)
                 # Fetch the file content using the commit SHA
                 file_content = fetch_file_content(repo, commit_sha, file_path)
                 print(file_content)
