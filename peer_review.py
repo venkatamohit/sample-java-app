@@ -68,6 +68,11 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
 
+    headers = {
+        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
     for issue in issues:
         line_number = issue['line_number']
         comment = issue['comment']
