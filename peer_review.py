@@ -54,7 +54,6 @@ def review_code(code, repo, pull_number, file_path):
         return True  # No issues found
     else:
         # Post the review result as comments on the pull request
-        post_issue_comments(repo, pull_number, file_path, review_result)
         post_issue_comments(repo, pull_number, file_path, filtered_review_result)
         return False  # Issues found
 
