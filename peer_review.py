@@ -2,32 +2,25 @@ import os
 import requests
 import openai
 import base64
-from dotenv import load_dotenv
 from github import Github, GithubIntegration
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
 
 def get_github_api_client():
     github_app_id = os.getenv('GITHUB_APP_ID')
-    github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
     github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
-
-    # Read private key file contents
+    github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
+    
     with open(github_private_key_path, 'r') as key_file:
         private_key = key_file.read()
 
-    # Create GitHub Integration
     integration = GithubIntegration(github_app_id, private_key)
 
-    # Get installation access token
-    installation_id = int(github_installation_id)
-    installation = integration.get_repo_installation(repo_id=installation_id)
-
-    # Create installation access token
-    access_token = installation.create_access_token()
-
-    # Create GitHub client with access token
-    github_client = Github(access_token)
-
-    return github_client
+    installation = integration.get_installation(github_installation_id)
+    access_token = integration.get_access_token(installation.id).token
+    return Github(login_or_token=access_token)
 
 def review_code(code, repo, pull_number, file_path):
     openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -66,6 +59,7 @@ def review_code(code, repo, pull_number, file_path):
 
 def post_issue_comments(repo, pull_number, file_path, review_result):
     github_client = get_github_api_client()
+    repo = github_client.get_repo(repo)
 
     # Fetch the latest commit ID associated with the file
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
@@ -85,16 +79,14 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         }
         if line_number:
             data["position"] = line_number
+        url = f"https://api.github.com/repos/{repo.full_name}/pulls/{pull_number}/comments"
+        response = requests.post(url, headers=headers, json=data)
 
-        # Post comment using PyGithub
-        try:
-            repo_obj = github_client.get_repo(repo)
-            pull_request = repo_obj.get_pull(int(pull_number))
-            pull_request.create_review_comment(body=data['body'], commit_id=data['commit_id'],
-                                               path=data['path'], position=data.get('position', None))
+        if response.status_code == 201:
             print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
-        except Exception as e:
-            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}: {str(e)}")
+        else:
+            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}. Status code: {response.status_code}")
+            print(f"Response body: {response.text}")
 
 def parse_review_result(review_result, file_path):
     issues = []
@@ -127,44 +119,32 @@ def parse_review_result(review_result, file_path):
 
 def fetch_latest_commit_id(repo, pull_number, file_path):
     github_client = get_github_api_client()
+    repo = github_client.get_repo(repo)
+    pr = repo.get_pull(pull_number)
+    commits = pr.get_commits()
 
-    try:
-        repo_obj = github_client.get_repo(repo)
-        pull_request = repo_obj.get_pull(int(pull_number))
-        commits = pull_request.get_commits()
-        if commits:
-            return commits[-1].sha  # Use the latest commit's SHA
-        else:
-            raise Exception("No commits found in the pull request.")
-    except Exception as e:
-        raise Exception(f"Failed to fetch commit details for PR #{pull_number}: {str(e)}")
+    if commits.totalCount > 0:
+        return commits[commits.totalCount - 1].sha  # Use the latest commit's SHA
+    else:
+        raise Exception("No commits found in the pull request.")
 
 def fetch_files_in_pull_request(repo, pull_number):
     github_client = get_github_api_client()
-
-    try:
-        repo_obj = github_client.get_repo(repo)
-        pull_request = repo_obj.get_pull(int(pull_number))
-        files = pull_request.get_files()
-        file_paths = [file.filename for file in files]
-        return file_paths
-    except Exception as e:
-        raise Exception(f"Failed to fetch files in pull request #{pull_number}: {str(e)}")
+    repo = github_client.get_repo(repo)
+    pr = repo.get_pull(pull_number)
+    files = pr.get_files()
+    file_paths = [file.filename for file in files]
+    return file_paths
 
 def fetch_file_content(repo, commit_id, file_path):
     github_client = get_github_api_client()
-
-    try:
-        repo_obj = github_client.get_repo(repo)
-        file_content = repo_obj.get_contents(file_path, ref=commit_id)
-        content = base64.b64decode(file_content.content).decode('utf-8')
-        return content
-    except Exception as e:
-        raise Exception(f"Failed to fetch content for file {file_path}: {str(e)}")
+    repo = github_client.get_repo(repo)
+    contents = repo.get_contents(file_path, ref=commit_id)
+    return base64.b64decode(contents.content).decode('utf-8')
 
 def main():
     repo = "venkatamohit/sample-java-app"
-    pull_number = os.getenv('GITHUB_PULL_NUMBER')
+    pull_number = int(os.getenv('GITHUB_PULL_NUMBER'))
 
     # File extensions to skip during review
     skip_extensions = ['.md', '.txt', '.json', '.py', '.yml']
