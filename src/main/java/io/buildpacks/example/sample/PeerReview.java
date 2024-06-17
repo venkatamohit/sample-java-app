@@ -1,14 +1,33 @@
-public class IntegerCalculator {
-    // Class to perform integer addition
-    public static int sum(int a, int b) {
+package io.buildpacks.example.sample;
+
+/**
+ * The PeerReview class provides a method to sum two integers.
+ * This class also contains a main method to test the sum method.
+ */
+public class PeerReview {
+
+    /**
+     * Sums two integers.
+     * 
+     * @param a the first integer
+     * @param b the second integer
+     * @return the sum of a and b
+     */
+    public int sum(int a, int b) {
         return a + b;
     }
+
+    /**
+     * Main method to test the sum method.
+     * 
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
-        System.out.println(sum(5, 3)); // Expected output: 8
-        System.out.println(sum(-1, 1)); // Expected output: 0
-        System.out.println(sum(10, -5)); // Expected output: 5
-        // Additional test cases
-        System.out.println(sum(0, 0)); // Expected output: 0
-        System.out.println(sum(100, 200)); // Expected output: 300
+        PeerReview peerReview = new PeerReview();
+
+        // Test the sum method and print the results
+        System.out.println("Sum of 1 and 2: " + peerReview.sum(1, 2)); // Expected output: 3
+        System.out.println("Sum of 3 and 4: " + peerReview.sum(3, 4)); // Expected output: 7
+        System.out.println("Sum of 5 and 6: " + peerReview.sum(5, 6)); // Expected output: 11
     }
 }
