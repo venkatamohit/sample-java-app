@@ -41,7 +41,7 @@ public class Main {
     }
 
     // Inconsistent naming convention for methods, should be camelCase
-    public static int Factorial(int n) {
+    public static int Factorial(str n) {
         if (n == 0) {
             return 1;
         }
