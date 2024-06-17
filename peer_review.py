@@ -67,6 +67,7 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
     repo_obj = github_client.get_repo(repo_name)
     # Fetch the latest commit ID associated with the file
     commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
+    print(commit_id)
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
 
@@ -77,7 +78,7 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
         # If line_number is None, post a regular PR comment
         if line_number is None:
             try:
-                pull_request = repo.get_pull(pull_number)
+                pull_request = repo_obj.get_pull(pull_number)
                 pull_request.create_issue_comment(comment)
                 print(f"Successfully posted general comment on PR #{pull_number}")
             except Exception as e:
@@ -93,7 +94,7 @@ def post_issue_comments(repo_name, pull_number, file_path, review_result):
 
             # Post the comment using PyGithub
             try:
-                pull_request = repo.get_pull(pull_number)
+                pull_request = repo_obj.get_pull(pull_number)
                 pull_request.create_review_comment(data["body"], data["commit_id"], file_path, line_number)
                 print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
             except Exception as e:
