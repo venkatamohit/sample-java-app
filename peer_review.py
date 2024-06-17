@@ -3,22 +3,23 @@ import requests
 import openai
 import base64
 from github import Github, GithubIntegration
+from dotenv import load_dotenv
 
 # Load environment variables
-from dotenv import load_dotenv
 load_dotenv()
 
 def get_github_api_client():
     github_app_id = os.getenv('GITHUB_APP_ID')
     github_private_key_path = os.getenv('GITHUB_PRIVATE_KEY')
-    github_installation_id = os.getenv('GITHUB_INSTALLATION_ID')
-    
+    repo_name = os.getenv('GITHUB_REPOSITORY')
+
     with open(github_private_key_path, 'r') as key_file:
         private_key = key_file.read()
 
     integration = GithubIntegration(github_app_id, private_key)
 
-    installation = integration.get_installation(github_installation_id)
+    # Get the installation ID for the repository
+    installation = integration.get_repo_installation(repo_name)
     access_token = integration.get_access_token(installation.id).token
     return Github(login_or_token=access_token)
 
