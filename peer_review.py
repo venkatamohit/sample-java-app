@@ -73,15 +73,10 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
     repo = github_client.get_repo(repo)
 
     # Fetch the latest commit ID associated with the file
-    commit_id = fetch_latest_commit_id(repo, pull_number, file_path)
+    commit_id = fetch_latest_commit_id(repo.full_name, pull_number, file_path)
 
     # Parse the review result and extract issues
     issues = parse_review_result(review_result, file_path)
-
-    headers = {
-        "Authorization": f"token {os.getenv('MY_GITHUB_TOKEN')}",
-        "Accept": "application/vnd.github.v3+json"
-    }
 
     for issue in issues:
         line_number = issue['line_number']
@@ -95,14 +90,14 @@ def post_issue_comments(repo, pull_number, file_path, review_result):
         }
         if line_number:
             data["position"] = line_number
-        url = f"https://api.github.com/repos/{repo.full_name}/pulls/{pull_number}/comments"
-        response = requests.post(url, headers=headers, json=data)
 
-        if response.status_code == 201:
+        # Post the comment using PyGithub
+        try:
+            pull_request = repo.get_pull(pull_number)
+            pull_request.create_review_comment(data["body"], data["commit_id"], file_path, line_number)
             print(f"Successfully posted comment on Line {line_number} of PR #{pull_number}")
-        else:
-            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}. Status code: {response.status_code}")
-            print(f"Response body: {response.text}")
+        except Exception as e:
+            print(f"Failed to post comment on Line {line_number} of PR #{pull_number}: {str(e)}")
 
 def parse_review_result(review_result, file_path):
     issues = []
