@@ -150,11 +150,21 @@ def fetch_file_content(repo, commit_id, file_path):
     print(f"{commit_id}")
     print(f"{file_path}")
     print(f"{repo}")
-    # Fetch contents of the file at specific commit
-    contents = repo.get_contents(file_path, ref=commit_id)
-    print(contents)
-    # Decode and return content
-    return base64.b64decode(contents.content).decode('utf-8')
+   try:
+        # Print debug info
+        print(f"Fetching content of file: {file_path} at commit: {commit_id}")
+        
+        # Fetch contents from GitHub
+        contents = repo.get_contents(file_path, ref=commit_id)
+        
+        # Print content for debugging
+        print(f"Content fetched: {contents.content[:100]}")  # Print part of the content
+        
+        # Decode and return content
+        return base64.b64decode(contents.content).decode('utf-8')
+    except Exception as e:
+        print(f"Error fetching file content: {str(e)}")
+        raise  # Re-raise the exception for further troubleshooting
 
 def main():
     repo = "venkatamohit/sample-java-app"
@@ -170,6 +180,7 @@ def main():
     reviewed_files = set()
 
     for file_path in file_paths:
+        print(file_path)
         # Skip files with certain extensions
         if any(file_path.endswith(ext) for ext in skip_extensions):
             continue
