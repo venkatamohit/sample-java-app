@@ -38,6 +38,6 @@ public class Main {
         System.out.println("Factorial of 6 is: " + incorrectFact);
         
         // Uncomment the following line to introduce a compilation error
-        // int x = "string"; // This will cause a compilation error
+        int x = "string"; // This will cause a compilation error
     }
 }
