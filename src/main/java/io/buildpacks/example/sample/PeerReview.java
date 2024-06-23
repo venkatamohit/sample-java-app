@@ -1,14 +1,17 @@
 package com.example;
 
 /**
- * This class demonstrates intentional issues to fail code review.
+ * This class demonstrates a simple example of a Java program.
  */
 public class Main {
 
     /**
-     * Incorrect method name and missing Javadoc.
+     * Calculates the factorial of a given number.
+     *
+     * @param n The number for which factorial needs to be calculated.
+     * @return The factorial of n.
      */
-    public static int Factorial(int n) {
+    public static int factorial(int n) {
         if (n == 0) {
             return 1;
         }
@@ -20,15 +23,13 @@ public class Main {
     }
 
     /**
-     * Main method with incorrect usage of Factorial method.
+     * Main method that demonstrates the usage of the factorial method.
+     *
+     * @param args Command-line arguments (not used in this example).
      */
     public static void main(String[] args) {
         int number = 5;
-        int fact = Factorial(number); // Incorrect method call
+        int fact = factorial(number);
         System.out.println("Factorial of " + number + " is: " + fact);
-        
-        // Division by zero
-        int result = 10 / a; // This will throw ArithmeticException
-        System.out.println("Result: " + result);
     }
 }
