@@ -43,7 +43,7 @@ def review_code(code, repo, pull_number, file_path):
     print(f"Review result for {file_path}:\n{review_result}")
 
     # Filter out non-issue lines
-    issue_keywords = ["issue", "error", "bug", "problem", "fix", "improve", "incorrect", "mistake"]
+    issue_keywords = ["issue", "error", "bug", "problem", "fix", "improve", "incorrect", "mistake","not","typo"]
     issue_lines = [line for line in review_result.split('\n') if any(keyword in line.lower() for keyword in issue_keywords)]
 
     filtered_review_result = '\n'.join(issue_lines)
